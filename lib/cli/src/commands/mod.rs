@@ -197,6 +197,7 @@ impl WasmerCmd {
                 Package::Tag(cmd) => cmd.run(),
                 Package::Push(cmd) => cmd.run(),
                 Package::Publish(cmd) => cmd.run().map(|_| ()),
+                Package::Tree(cmd) => cmd.run(),
                 Package::Unpack(cmd) => cmd.execute(),
             },
             Some(Cmd::Container(cmd)) => match cmd {

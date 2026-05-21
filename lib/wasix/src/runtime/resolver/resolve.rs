@@ -97,7 +97,7 @@ fn print_cycle(packages: &[PackageId]) -> String {
 /// Unlike [`resolve()`], this only queries and links packages. It does not apply
 /// runtime compatibility checks such as rejecting duplicate package versions.
 #[tracing::instrument(level = "debug", skip_all)]
-async fn resolve_dependency_graph(
+pub async fn resolve_dependency_graph(
     root_id: &PackageId,
     root: &PackageInfo,
     source: &dyn Source,
@@ -117,7 +117,7 @@ async fn resolve_dependency_graph(
 }
 
 /// Validate whether a dependency graph can be unified into a runnable package.
-fn validate_dependency_graph(graph: &DependencyGraph) -> Result<(), ResolveError> {
+pub fn validate_dependency_graph(graph: &DependencyGraph) -> Result<(), ResolveError> {
     check_for_duplicate_versions(
         petgraph::algo::toposort(graph.graph(), None)
             .expect("dependency graph is acyclic")
@@ -475,7 +475,11 @@ async fn dependency_candidates(
                         .as_named()
                         .is_some_and(|id| named.matches_id(id))
                 };
-                return Ok(matches.then(|| vec![selected.clone()]).unwrap_or_default());
+                return Ok(if matches {
+                    vec![selected.clone()]
+                } else {
+                    Vec::new()
+                });
             }
 
             let candidates = named_dependency_candidates(named, source, candidate_cache).await?;
