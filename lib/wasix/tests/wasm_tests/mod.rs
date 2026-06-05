@@ -1176,18 +1176,14 @@ fn collect_tests(tests: &mut Vec<Trial>) -> Result<()> {
         let test_name = relative_test_path.display().to_string();
         let primary_sources = identify_primary_sources(entry.path())?;
 
-        let mut supported_engines = vec![];
+        #[allow(unused_mut)]
+        let mut supported_engines = vec![Engine::Cranelift];
         #[cfg(feature = "llvm")]
         supported_engines.push(Engine::LLVM);
         #[cfg(feature = "singlepass")]
         supported_engines.push(Engine::Singlepass);
         #[cfg(feature = "v8")]
         supported_engines.push(Engine::V8);
-
-        // Cranelift EH support for macOS is still missing: #6419.
-        if !cfg!(target_os = "macos") {
-            supported_engines.push(Engine::Cranelift);
-        }
 
         let default_file_systems = vec![FileSystemKind::Host];
         for primary_source in primary_sources {
@@ -1202,7 +1198,7 @@ fn collect_tests(tests: &mut Vec<Trial>) -> Result<()> {
                 for file_system in config
                     .file_systems
                     .as_ref()
-                    .unwrap_or_else(|| &default_file_systems)
+                    .unwrap_or(&default_file_systems)
                 {
                     for engine in &supported_engines {
                         // In general, the WASIX tests expect support for more advanced WebAssembly extensions (like exception handling),
